@@ -4,11 +4,11 @@ Jak sklonować repozytorium i uruchomić aplikację
 -----------------------------------------------
 1. Sklonuj repozytorium:
 ```bash
-git clone https://github.com/twoje-repozytorium.git
+git clone https://https://github.com/Wojciechprg/UWS_kalendarz
 ```
 2. Przejdź do katalogu z projektem:
 ```bash
-cd kalendarz_wydarzen
+cd UWS_kalendarz
 ```
 Uruchomienie aplikacji lokalnie (Flask)
 ---------------------------------------
