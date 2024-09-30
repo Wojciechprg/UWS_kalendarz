@@ -1,0 +1,44 @@
+.event-block {
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.event-block:hover {
+    background-color: #e9ecef;
+    border-color: #007bff;
+    cursor: pointer;
+}
+
+button.btn-primary {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+button.btn-primary:hover {
+    background-color: #45a049;
+}
+
+td:hover {
+    background-color: #f0f8ff;
+    cursor: pointer;
+}
+/* Make borders in the calendar transparent */
+table.table-bordered th, table.table-bordered td {
+    border-color: transparent;
+}
+
+/* Light blue background for day of the week headers */
+table th {
+    background-color: #add8e6 !important; /* Light blue */
+    text-align: center;
+}
+
+/* Style for the current day */
+.current-day {
+    background-color: #ffffcc !important; /* Light yellow */
+}
+

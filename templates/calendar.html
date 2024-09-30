@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Kalendarz wydarzeń</title>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center my-4">Kalendarz wydarzeń - {{ month }}/{{ year }}</h1>
+
+    <div class="text-center mb-3">
+        <a href="/?year={{ prev_year }}&month={{ prev_month }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}" class="btn btn-primary">Poprzedni Miesiąc</a>
+        <a href="/?year={{ next_year }}&month={{ next_month }}{% for tag in selected_tags %}&tags={{ tag }}{% endfor %}" class="btn btn-primary">Następny Miesiąc</a>
+    </div>
+
+    <div class="dropdown mb-3">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            Filtruj według tagów
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <form method="GET" action="/">
+                <input type="hidden" name="year" value="{{ year }}">
+                <input type="hidden" name="month" value="{{ month }}">
+                {% for tag in all_tags %}
+                <li>
+                    <label class="dropdown-item">
+                        <input type="checkbox" name="tags" value="{{ tag }}"
+                            {% if tag in selected_tags %} checked {% endif %}> {{ tag }}
+                    </label>
+                </li>
+                {% endfor %}
+                <li><button type="submit" class="btn btn-primary dropdown-item">Zastosuj Filtry</button></li>
+            </form>
+        </ul>
+    </div>
+
+    <div class="row">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Niedziela</th>
+                <th>Poniedziałek</th>
+                <th>Wtorek</th>
+                <th>Środa</th>
+                <th>Czwartek</th>
+                <th>Piątek</th>
+                <th>Sobota</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for week in calendar_weeks %}
+            <tr>
+                {% for day in week %}
+                {% if day.day != "" %}
+                <td class="calendar-day" data-day="{{ day.day }}">
+                    <div>
+                        <strong>{{ day.day }}</strong>
+
+                        {% for event in day.events %}
+                        <div class="event-block mb-2 p-2 border rounded">
+                            <a href="#" class="text-primary" data-event-id="{{ event.id }}" onclick="fetchEventDetails({{ event.id }})" style="text-decoration: none;">
+                                {{ event.name }}
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </td>
+                {% else %}
+                <td></td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">Szczegóły wydarzenia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="eventImage" src="" alt="Zdjęcie Wydarzenia" class="img-fluid mb-3">
+                    <p><strong>Data:</strong> <span id="eventDate"></span></p>
+                    <p><strong>Godzina rozpoczęcia:</strong> <span id="eventStart"></span></p>
+                    <p><strong>Czas trwania (w godzinach):</strong> <span id="eventDuration"></span> </p>
+                    <p><strong>Miejsce:</strong> <span id="eventLocation"></span></p>
+                    <p id="eventDescription"></p>
+                    <p><strong>Tagi:</strong> <span id="eventTags"></span></p>
+                    <p><a id="eventRegistrationLink" href="#" class="btn btn-primary">Zarejestruj się</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+     function fetchEventDetails(eventId) {
+        fetch(`/event-details/` + eventId)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('eventModalLabel').textContent = data.name;
+                document.getElementById('eventImage').src = '{{ base_url }}' + data.image_url;
+
+
+                const eventDateTime = data.start_time.split('T');//yyyy-mm-ddThh:mm:ss
+                const eventDate = eventDateTime[0];
+                const eventStart = eventDateTime[1];
+
+                document.getElementById('eventDate').textContent = eventDate;
+                document.getElementById('eventStart').textContent = eventStart;
+                document.getElementById('eventDuration').textContent = data.duration;
+                document.getElementById('eventLocation').textContent = data.location;
+                document.getElementById('eventDescription').textContent = data.long_description;
+
+                const tags = data.tags.map(tag => tag.name).join(', ');
+                document.getElementById('eventTags').textContent = tags;
+
+                document.getElementById('eventRegistrationLink').href = data.registration_link;
+
+                const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+                eventModal.show();
+            })
+            .catch(error => console.error('Error fetching event details:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const currentDay = today.getDate();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+
+        const displayedMonth = parseInt('{{ month }}');
+        const displayedYear = parseInt('{{ year }}');
+
+        if (currentMonth === displayedMonth && currentYear === displayedYear) {
+            const days = document.querySelectorAll('.calendar-day');
+            days.forEach(day => {
+                const dayNumber = parseInt(day.getAttribute('data-day'));
+                if (dayNumber === currentDay) {
+                    day.classList.add('current-day');
+                }
+            });
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+</body>
+</html>
